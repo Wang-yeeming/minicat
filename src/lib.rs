@@ -79,14 +79,16 @@ int main() {
 
         assert_eq!(
             show("-E", &text),
-            vec!["\
+            vec![
+                "\
 #include <iostream>$",
-"$",
-"int main() {$",
-"	std::cout << \"Hello, world!\" << std::endl;$",
-"$",
-"	return 0;$",
-"}$"]
+                "$",
+                "int main() {$",
+                "	std::cout << \"Hello, world!\" << std::endl;$",
+                "$",
+                "	return 0;$",
+                "}$"
+            ]
         )
     }
 
