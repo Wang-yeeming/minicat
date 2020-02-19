@@ -1,1 +1,1 @@
-# minicat: A CLI wroten with Rust-lang.
+# minicat: A self-made CLI tool written with Rust-lang.
