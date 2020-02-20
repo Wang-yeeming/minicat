@@ -44,15 +44,34 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 pub fn show(cmd: &str, contents: &str) -> Vec<String> {
     match cmd {
         // Number nonempty output lines
-        //		"-B" | "--number-nonblock" => ,
+        //		"-b" | "--number-nonblock" => ,
         // Display $ at end of each line
         "-E" | "--show-ends" => contents.lines().map(|line| format!("{}$", line)).collect(),
         // Number all output lines
-        //"-N" | "--number" => {}
+        "-n" | "--number" => {
+            let mut count: u64 = 0;
+            let mut collecter: Vec<String> = Vec::new();
+
+            loop {
+                let arg = match contents.lines().next() {
+                    Some(l) => l,
+                    None => return collecter,
+                };
+
+                count += 1;
+
+                collecter.push(
+                    contents
+                        .lines()
+                        .map(|_| format!("{:>6}  {}", count, arg))
+                        .collecter(),
+                );
+            }
+        }
         // Display TAB characters as ^I
         //		"-T" | "--show-tabs" => vec!["ok"],
         // Display this help and exit
-        //		"-H" | "--help" => vec!["ok"],
+        //		"-h" | "--help" => vec!["ok"],
         // Output version information and exit
         //		"-V" | "--version" => vec!["ok"],
         // Default
@@ -80,8 +99,7 @@ int main() {
         assert_eq!(
             show("-E", &text),
             vec![
-                "\
-#include <iostream>$",
+                "#include <iostream>$",
                 "$",
                 "int main() {$",
                 "	std::cout << \"Hello, world!\" << std::endl;$",
@@ -93,5 +111,29 @@ int main() {
     }
 
     #[test]
-    fn use_number_cmd() {}
+    fn use_number_cmd() {
+        let text = String::from(
+            "\
+#include <iostream>
+
+int main() {
+	std::cout << \"Hello, world!\" << std::endl;
+
+	return 0;
+}",
+        );
+
+        assert_eq!(
+            show("-n", &text),
+            vec![
+                "     1  #include <iostream>",
+                "     2  ",
+                "     3  int main() {",
+                "     4		std::cout << \"Hello, world\" << std::endl;",
+                "     5  ",
+                "     6		return 0;",
+                "     7  }"
+            ]
+        )
+    }
 }
