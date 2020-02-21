@@ -50,23 +50,14 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
         // Number all output lines
         "-n" | "--number" => {
             let mut count: u64 = 0;
-            let mut collecter: Vec<String> = Vec::new();
 
-            loop {
-                let arg = match contents.lines().next() {
-                    Some(l) => l,
-                    None => return collecter,
-                };
-
-                count += 1;
-
-                collecter.push(
-                    contents
-                        .lines()
-                        .map(|_| format!("{:>6}  {}", count, arg))
-                        .collecter(),
-                );
-            }
+            contents
+                .lines()
+                .map(|line| {
+                    count += 1;
+                    format!("{:>6}  {}", count, line)
+                })
+                .collect()
         }
         // Display TAB characters as ^I
         //		"-T" | "--show-tabs" => vec!["ok"],
@@ -129,9 +120,9 @@ int main() {
                 "     1  #include <iostream>",
                 "     2  ",
                 "     3  int main() {",
-                "     4		std::cout << \"Hello, world\" << std::endl;",
+                "     4  \tstd::cout << \"Hello, world!\" << std::endl;",
                 "     5  ",
-                "     6		return 0;",
+                "     6  \treturn 0;",
                 "     7  }"
             ]
         )
