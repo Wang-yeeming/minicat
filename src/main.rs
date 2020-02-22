@@ -3,14 +3,19 @@ use std::env;
 use std::process;
 
 fn main() {
+    let mut config = Config {
+        command: "-u".to_string(),
+        filename: "\0".to_string(),
+    };
+
     if env::args().len() > 2 {
-        let config = Config::new(env::args()).unwrap_or_else(|err| {
+        config = Config::new(env::args()).unwrap_or_else(|err| {
             eprintln!("{}", err);
 
             process::exit(1);
         });
     } else {
-        let config = Config::new_nocmd(env::args()).unwrap_or_else(|err| {
+        config = Config::new_nocmd(env::args()).unwrap_or_else(|err| {
             eprintln!("{}", err);
 
             process::exit(1);
