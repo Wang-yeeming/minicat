@@ -1,9 +1,9 @@
 # minicat: A self-made CLI tool written with Rust-lang, simple implement of cat.
----
+
 ## USAGE
 	minicat [OPTIONS] [FILE]
----
 ## OPTIONS
+
 + -A, --show-all           
 equivalent to -ET
 + -b, --number-nonblank    
