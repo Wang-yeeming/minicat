@@ -9,23 +9,17 @@ fn main() {
 
             process::exit(1);
         });
-
-        if let Err(e) = minicat::run(config) {
-            eprintln!("{}", e);
-
-            process::exit(1);
-        };
     } else {
         let config = Config::new_nocmd(env::args()).unwrap_or_else(|err| {
             eprintln!("{}", err);
 
             process::exit(1);
         });
-
-        if let Err(e) = minicat::run_nocmd(config) {
-            eprintln!("{}", e);
-
-            process::exit(1);
-        }
     }
+
+    if let Err(e) = minicat::run(config) {
+        eprintln!("{}", e);
+
+        process::exit(1);
+    };
 }
