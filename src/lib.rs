@@ -21,23 +21,43 @@ please check what you just pressed.");
         let filename = match args.next() {
             Some(arg) => arg,
             None => {
-                if command == "--help".to_string() {
-                    "README.md".to_string()
-                } else if command == "--version".to_string() {
-                    "README.md".to_string()
-                } else {
-                    return Err("Cannot found the file, \
+                return Err("Cannot found the file, \
 please check what you just pressed.");
-                }
             }
         };
+
+        Ok(Config { command, filename })
+    }
+
+    pub fn new_nocmd(mut args: env::Args) -> Result<Config, &'static str> {
+        args.next();
+
+        let mut command = String::from("-u");
+        let mut filename = match args.next() {
+            Some(arg) => arg,
+            None => {
+                return Err("Cannot found the file, \
+please check what you just pressed.");
+            }
+        };
+
+        if filename == "--help".to_string() {
+            command = "--help".to_string();
+            filename = "\0".to_string();
+        } else if filename == "--version".to_string() {
+            command = "--version".to_string();
+            filename = "\0".to_string();
+        }
 
         Ok(Config { command, filename })
     }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(config.filename)?;
+    let contents = match config.filename.as_str() {
+        "\0" => "\0".to_string(),
+        _ => fs::read_to_string(config.filename)?,
+    };
     let cmd = config.command;
 
     for line in show(&cmd, &contents) {
@@ -50,15 +70,13 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 pub fn show(cmd: &str, contents: &str) -> Vec<String> {
     match cmd {
         // Show all
-        "-A" | "--show-all" | "-ET" | "-TE" => {
-        contents
+        "-A" | "--show-all" | "-ET" | "-TE" => contents
             .lines()
             .map(|line| {
                 let tmp = line.replace("\t", "^I");
                 format!("{}$", tmp)
             })
-			.collect()
-		},
+            .collect(),
         // Number nonindex output lines
         "-b" | "--number-nonblank" => {
             let mut count: u64 = 0;
@@ -112,7 +130,7 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
         "--help" => vec![String::from(
             "\
 name:    minicat
-version: 0.1.0
+version: 0.2.0
 author:  Wang-yeeming <yeeming0771@foxmail.com>
 about:   A self-made CLI tool, simply implement of the cat.
 
@@ -134,7 +152,7 @@ OPTIONS
 Have a try!",
         )],
         // Output version information and exit
-        "--version" => vec!["minicat 0.1.0".to_string()],
+        "--version" => vec!["minicat 0.2.0".to_string()],
         // Unidentified command
         _ => vec![format!(
             "Cannot found command named: {}.
@@ -249,13 +267,13 @@ If you wanna output directly, try: minicat -u [FILE]"
         )
     }
 
-	#[test]
-	fn use_show_tabs_cmd() {
-		let text = generate_text();
+    #[test]
+    fn use_show_tabs_cmd() {
+        let text = generate_text();
 
-		assert_eq!(
-			show("-T", &text),
-			vec![
+        assert_eq!(
+            show("-T", &text),
+            vec![
                 "#include <iostream>",
                 "",
                 "int main() {",
@@ -263,17 +281,17 @@ If you wanna output directly, try: minicat -u [FILE]"
                 "",
                 "^Ireturn 0;",
                 "}"
-			]
-		)
-	}
+            ]
+        )
+    }
 
-	#[test]
-	fn use_show_all_cmd() {
-		let text = generate_text();
+    #[test]
+    fn use_show_all_cmd() {
+        let text = generate_text();
 
-		assert_eq!(
-			show("--show-all", &text),
-			vec![
+        assert_eq!(
+            show("--show-all", &text),
+            vec![
                 "#include <iostream>$",
                 "$",
                 "int main() {$",
@@ -281,7 +299,7 @@ If you wanna output directly, try: minicat -u [FILE]"
                 "$",
                 "^Ireturn 0;$",
                 "}$"
-			]
-		)
-	}
+            ]
+        )
+    }
 }
