@@ -8,21 +8,21 @@
 equivalent to -vET
 + -b, --number-nonblank    
 number nonempty output lines, overrides -n
-+ -e
++ -e               
 equivalent to -vE
 + -E, --show-ends          
 display $ at end of each line
 + -n, --number             
 number all output lines
-+ ~~-s, --squeeze-blank~~
++ ~~-s, --squeeze-blank~~                
 ~~suppress repeated empty output lines~~
-+ -t
++ -t                                 
 equivalent to -vT
 + -T, --show-tabs          
 display TAB characters as ^I
 + -u                       
 (ignore)
-+ -v
++ -v                                       
 display non-ASCII characters as @
 + --help               
 display help and exit
