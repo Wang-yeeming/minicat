@@ -14,8 +14,8 @@ equivalent to -vE
 display $ at end of each line
 + -n, --number             
 number all output lines
-+ ~~-s, --squeeze-blank~~                
-~~suppress repeated empty output lines~~
++ -s, --squeeze-blank                
+suppress repeated empty output lines
 + -t                                 
 equivalent to -vT
 + -T, --show-tabs          

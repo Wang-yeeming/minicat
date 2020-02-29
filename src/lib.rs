@@ -63,10 +63,12 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let cmd = config.command;
 
     for line in show(&cmd, &contents) {
-		match line {
-			Some(txt) => {println!("{}", txt);},
-			None => (),
-		}
+        match line {
+            Some(txt) => {
+                println!("{}", txt);
+            }
+            None => (),
+        }
     }
 
     Ok(())
@@ -149,7 +151,10 @@ pub fn show(cmd: &str, contents: &str) -> Vec<Option<String>> {
             })
             .collect(),
         // Display $ at end of each line
-        "-E" | "--show-ends" => contents.lines().map(|line| Some(format!("{}$", line))).collect(),
+        "-E" | "--show-ends" => contents
+            .lines()
+            .map(|line| Some(format!("{}$", line)))
+            .collect(),
         // Number all output lines
         "-n" | "--number" => {
             let mut count: u64 = 0;
@@ -183,7 +188,7 @@ pub fn show(cmd: &str, contents: &str) -> Vec<Option<String>> {
                             Some(line.to_string())
                         } else {
                             if FLAG {
-								None
+                                None
                             } else {
                                 FLAG = true;
                                 Some(String::from(" "))
@@ -227,7 +232,10 @@ pub fn show(cmd: &str, contents: &str) -> Vec<Option<String>> {
             })
             .collect(),
         // Ignore
-        "-u" => contents.lines().map(|line| Some(line.to_string())).collect(),
+        "-u" => contents
+            .lines()
+            .map(|line| Some(line.to_string()))
+            .collect(),
         // Use ^M notation, except for LFD and TAB
         "-v" | "--show-nonascii" => contents
             .lines()
@@ -370,11 +378,12 @@ int main() {
 
         assert_eq!(
             show("foobar", &text),
-            vec![
-                Some("Cannot found command named: foobar.
+            vec![Some(
+                "Cannot found command named: foobar.
 Please press '--help' for help.
-If you wanna output directly, try: minicat -u [FILE]".to_string())
-            ]
+If you wanna output directly, try: minicat -u [FILE]"
+                    .to_string()
+            )]
         )
     }
 
@@ -418,34 +427,55 @@ If you wanna output directly, try: minicat -u [FILE]".to_string())
     fn use_show_all_cmd() {
         let text = String::from("\t\t我中国人、\n日本语了解不能。");
 
-        assert_eq!(show("--show-all", &text), vec![Some("^I^I@@@@@$".to_string()), Some("@@@@@@@@$".to_string())])
+        assert_eq!(
+            show("--show-all", &text),
+            vec![
+                Some("^I^I@@@@@$".to_string()),
+                Some("@@@@@@@@$".to_string())
+            ]
+        )
     }
 
     #[test]
     fn use_show_nonascii_cmd() {
         let text = String::from("你好世界\nHello world");
 
-        assert_eq!(show("-v", &text), vec![Some("@@@@".to_string()), Some("Hello world".to_string())])
+        assert_eq!(
+            show("-v", &text),
+            vec![Some("@@@@".to_string()), Some("Hello world".to_string())]
+        )
     }
 
     #[test]
     fn use_t_cmd() {
         let text = String::from("你好\t世界\n\t\tHello world");
 
-        assert_eq!(show("-t", &text), vec![Some("@@^I@@".to_string()), Some("^I^IHello world".to_string())])
+        assert_eq!(
+            show("-t", &text),
+            vec![
+                Some("@@^I@@".to_string()),
+                Some("^I^IHello world".to_string())
+            ]
+        )
     }
 
     #[test]
     fn use_e_cmd() {
         let text = String::from("你好\n\t世界");
 
-        assert_eq!(show("-e", &text), vec![Some("@@$".to_string()), Some("\t@@$".to_string())])
+        assert_eq!(
+            show("-e", &text),
+            vec![Some("@@$".to_string()), Some("\t@@$".to_string())]
+        )
     }
 
     #[test]
     fn use_squeeze_blank_cmd() {
         let text = String::from("\n\n\n\n\n");
 
-        assert_eq!(show("-s", &text), vec![Some(" ".to_string()), None, None, None, None])
+        assert_eq!(
+            show("-s", &text),
+            vec![Some(" ".to_string()), None, None, None, None]
+        )
     }
 }
