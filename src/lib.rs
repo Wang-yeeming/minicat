@@ -63,13 +63,16 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let cmd = config.command;
 
     for line in show(&cmd, &contents) {
-        println!("{}", line);
+		match line {
+			Some(txt) => {println!("{}", txt);},
+			None => (),
+		}
     }
 
     Ok(())
 }
 
-pub fn show(cmd: &str, contents: &str) -> Vec<String> {
+pub fn show(cmd: &str, contents: &str) -> Vec<Option<String>> {
     match cmd {
         // Show all
         "-A" | "--show-all" | "-vET" | "-vTE" | "-EvT" | "-TvE" | "-ETv" | "-TEv" => contents
@@ -93,7 +96,7 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
 
                 tmp = tmp.replace("\t", "^I");
 
-                format!("{}$", tmp)
+                Some(format!("{}$", tmp))
             })
             .collect(),
         // Number nonindex output lines
@@ -115,9 +118,9 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
                     if index {
                         // nonempty
                         count += 1;
-                        format!("{:>6}  {}", count, line)
+                        Some(format!("{:>6}  {}", count, line))
                     } else {
-                        String::from(" ")
+                        Some(String::from(" "))
                     }
                 })
                 .collect()
@@ -142,11 +145,11 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
                     tmp = format!("{}{}", tmp, st);
                 }
 
-                format!("{}$", tmp)
+                Some(format!("{}$", tmp))
             })
             .collect(),
         // Display $ at end of each line
-        "-E" | "--show-ends" => contents.lines().map(|line| format!("{}$", line)).collect(),
+        "-E" | "--show-ends" => contents.lines().map(|line| Some(format!("{}$", line))).collect(),
         // Number all output lines
         "-n" | "--number" => {
             let mut count: u64 = 0;
@@ -155,7 +158,7 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
                 .lines()
                 .map(|line| {
                     count += 1;
-                    format!("{:>6}  {}", count, line)
+                    Some(format!("{:>6}  {}", count, line))
                 })
                 .collect()
         }
@@ -177,13 +180,13 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
                         if index {
                             // nonempty
                             FLAG = false;
-                            line.to_string()
+                            Some(line.to_string())
                         } else {
                             if FLAG {
-                                String::from("\u{8}") // unsupplied in Rust
+								None
                             } else {
                                 FLAG = true;
-                                String::from(" ")
+                                Some(String::from(" "))
                             }
                         }
                     }
@@ -212,7 +215,7 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
 
                 tmp = tmp.replace("\t", "^I");
 
-                tmp
+                Some(tmp)
             })
             .collect(),
         // Display TAB characters as ^I
@@ -220,11 +223,11 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
             .lines()
             .map(|line| {
                 let tmp = line.replace("\t", "^I");
-                tmp
+                Some(tmp)
             })
             .collect(),
         // Ignore
-        "-u" => contents.lines().map(|line| line.to_string()).collect(),
+        "-u" => contents.lines().map(|line| Some(line.to_string())).collect(),
         // Use ^M notation, except for LFD and TAB
         "-v" | "--show-nonascii" => contents
             .lines()
@@ -245,14 +248,14 @@ pub fn show(cmd: &str, contents: &str) -> Vec<String> {
                     tmp = format!("{}{}", tmp, st);
                 }
 
-                tmp
+                Some(tmp)
             })
             .collect(),
         // Display this help and exit
-        "--help" => vec![String::from(
+        "--help" => vec![Some(String::from(
             "\
 name:    minicat
-version: 1.0.0
+version: 1.1.0
 author:  Wang-yeeming <yeeming0771@foxmail.com>
 about:   A self-made CLI tool, simple implement of the cat.
 
@@ -276,16 +279,16 @@ OPTIONS
 	    --version            output version information and exit
 
 Have a try!",
-        )],
+        ))],
         // Output version information and exit
-        "--version" => vec!["minicat 1.0.0".to_string()],
+        "--version" => vec![Some("minicat 1.1.0".to_string())],
         // Unidentified command
-        _ => vec![format!(
+        _ => vec![Some(format!(
             "Cannot found command named: {}.
 Please press '--help' for help.
 If you wanna output directly, try: minicat -u [FILE]",
             cmd
-        )],
+        ))],
     }
 }
 
@@ -314,13 +317,13 @@ int main() {
         assert_eq!(
             show("--number-nonblank", &text),
             vec![
-                "     1  #include <iostream>",
-                " ",
-                "     2  int main() {",
-                "     3  \tstd::cout << \"Hello, world!\" << std::endl;",
-                " ",
-                "     4  \treturn 0;",
-                "     5  }"
+                Some("     1  #include <iostream>".to_string()),
+                Some(" ".to_string()),
+                Some("     2  int main() {".to_string()),
+                Some("     3  \tstd::cout << \"Hello, world!\" << std::endl;".to_string()),
+                Some(" ".to_string()),
+                Some("     4  \treturn 0;".to_string()),
+                Some("     5  }".to_string())
             ]
         )
     }
@@ -332,13 +335,13 @@ int main() {
         assert_eq!(
             show("-E", &text),
             vec![
-                "#include <iostream>$",
-                "$",
-                "int main() {$",
-                "	std::cout << \"Hello, world!\" << std::endl;$",
-                "$",
-                "	return 0;$",
-                "}$"
+                Some("#include <iostream>$".to_string()),
+                Some("$".to_string()),
+                Some("int main() {$".to_string()),
+                Some("	std::cout << \"Hello, world!\" << std::endl;$".to_string()),
+                Some("$".to_string()),
+                Some("	return 0;$".to_string()),
+                Some("}$".to_string())
             ]
         )
     }
@@ -350,13 +353,13 @@ int main() {
         assert_eq!(
             show("-n", &text),
             vec![
-                "     1  #include <iostream>",
-                "     2  ",
-                "     3  int main() {",
-                "     4  \tstd::cout << \"Hello, world!\" << std::endl;",
-                "     5  ",
-                "     6  \treturn 0;",
-                "     7  }"
+                Some("     1  #include <iostream>".to_string()),
+                Some("     2  ".to_string()),
+                Some("     3  int main() {".to_string()),
+                Some("     4  \tstd::cout << \"Hello, world!\" << std::endl;".to_string()),
+                Some("     5  ".to_string()),
+                Some("     6  \treturn 0;".to_string()),
+                Some("     7  }".to_string())
             ]
         )
     }
@@ -368,9 +371,9 @@ int main() {
         assert_eq!(
             show("foobar", &text),
             vec![
-                "Cannot found command named: foobar.
+                Some("Cannot found command named: foobar.
 Please press '--help' for help.
-If you wanna output directly, try: minicat -u [FILE]"
+If you wanna output directly, try: minicat -u [FILE]".to_string())
             ]
         )
     }
@@ -382,13 +385,13 @@ If you wanna output directly, try: minicat -u [FILE]"
         assert_eq!(
             show("-u", &text),
             vec![
-                "#include <iostream>",
-                "",
-                "int main() {",
-                "	std::cout << \"Hello, world!\" << std::endl;",
-                "",
-                "	return 0;",
-                "}"
+                Some("#include <iostream>".to_string()),
+                Some("".to_string()),
+                Some("int main() {".to_string()),
+                Some("	std::cout << \"Hello, world!\" << std::endl;".to_string()),
+                Some("".to_string()),
+                Some("	return 0;".to_string()),
+                Some("}".to_string())
             ]
         )
     }
@@ -400,13 +403,13 @@ If you wanna output directly, try: minicat -u [FILE]"
         assert_eq!(
             show("-T", &text),
             vec![
-                "#include <iostream>",
-                "",
-                "int main() {",
-                "^Istd::cout << \"Hello, world!\" << std::endl;",
-                "",
-                "^Ireturn 0;",
-                "}"
+                Some("#include <iostream>".to_string()),
+                Some("".to_string()),
+                Some("int main() {".to_string()),
+                Some("^Istd::cout << \"Hello, world!\" << std::endl;".to_string()),
+                Some("".to_string()),
+                Some("^Ireturn 0;".to_string()),
+                Some("}".to_string())
             ]
         )
     }
@@ -415,34 +418,34 @@ If you wanna output directly, try: minicat -u [FILE]"
     fn use_show_all_cmd() {
         let text = String::from("\t\t我中国人、\n日本语了解不能。");
 
-        assert_eq!(show("--show-all", &text), vec!["^I^I@@@@@$", "@@@@@@@@$"])
+        assert_eq!(show("--show-all", &text), vec![Some("^I^I@@@@@$".to_string()), Some("@@@@@@@@$".to_string())])
     }
 
     #[test]
     fn use_show_nonascii_cmd() {
         let text = String::from("你好世界\nHello world");
 
-        assert_eq!(show("-v", &text), vec!["@@@@", "Hello world"])
+        assert_eq!(show("-v", &text), vec![Some("@@@@".to_string()), Some("Hello world".to_string())])
     }
 
     #[test]
     fn use_t_cmd() {
         let text = String::from("你好\t世界\n\t\tHello world");
 
-        assert_eq!(show("-t", &text), vec!["@@^I@@", "^I^IHello world"])
+        assert_eq!(show("-t", &text), vec![Some("@@^I@@".to_string()), Some("^I^IHello world".to_string())])
     }
 
     #[test]
     fn use_e_cmd() {
         let text = String::from("你好\n\t世界");
 
-        assert_eq!(show("-e", &text), vec!["@@$", "\t@@$"])
+        assert_eq!(show("-e", &text), vec![Some("@@$".to_string()), Some("\t@@$".to_string())])
     }
 
     #[test]
     fn use_squeeze_blank_cmd() {
         let text = String::from("\n\n\n\n\n");
 
-        assert_eq!(show("-s", &text), vec!["\n"])
+        assert_eq!(show("-s", &text), vec![Some(" ".to_string()), None, None, None, None])
     }
 }
